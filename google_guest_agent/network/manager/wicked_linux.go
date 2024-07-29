@@ -226,23 +226,15 @@ func (n wicked) writeEthernetConfigs(ifaces []string) error {
 	// Write the config for all the non-primary network interfaces.
 	for _, iface := range ifaces {
 		logger.Debugf("write enabling ifcfg-%s config", iface)
-
-		var ifcfg *os.File
-
-		ifcfg, err := os.Create(n.ifcfgFilePath(iface))
-		if err != nil {
-			return err
-		}
-		defer ifcfg.Close()
 		contents := []string{
 			googleComment,
 			"STARTMODE=hotplug",
 			// NOTE: 'dhcp' is the dhcp4+dhcp6 option.
 			"BOOTPROTO=dhcp",
 			fmt.Sprintf("DHCLIENT_ROUTE_PRIORITY=%d", priority),
+			"CLOUD__NETCONFIG__MANAGE=no",
 		}
-		_, err = ifcfg.WriteString(strings.Join(contents, "\n"))
-		if err != nil {
+		if err = os.WriteFile(n.ifcfgFilePath(iface), []byte(strings.Join(contents, "\n")), 0644); err != nil {
 			return fmt.Errorf("error writing config file for %s: %v", iface, err)
 		}
 		priority += 100
