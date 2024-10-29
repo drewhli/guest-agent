@@ -177,7 +177,7 @@ else
         systemctl try-restart google-guest-agent-manager.service >/dev/null 2>&1 || :
       else
         systemctl start google-guest-agent-manager.service >/dev/null 2>&1 || :
-      if
+      fi
     %endif
   fi
 fi
