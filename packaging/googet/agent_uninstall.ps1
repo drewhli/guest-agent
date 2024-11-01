@@ -15,8 +15,7 @@
 Stop-Service GCEAgent -Verbose
 & sc.exe delete GCEAgent
 
-$name = 'GCEAgentManager'
-if (Get-Service $name -ErrorAction SilentlyContinue) {
-    Stop-Service $name -Verbose
-    & sc.exe delete $name
+if (Get-Service GCEAgentManager -ErrorAction SilentlyContinue) {
+    Stop-Service GCEAgentManager -Verbose
+    & sc.exe delete GCEAgentManager
 }
