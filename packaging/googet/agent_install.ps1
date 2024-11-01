@@ -77,6 +77,8 @@ try {
   if ($install_manager) {
     Set-New-Service $manager_name $manager_display_name $manager_description $manager_path
     Set-ServiceConfig $manager_name $manager_path
+  } else {
+        Stop-Service GCEAgentManager && sc.exe delete GCEAgentManager
   }
 
   $config = "${env:ProgramFiles}\Google\Compute Engine\instance_configs.cfg"
