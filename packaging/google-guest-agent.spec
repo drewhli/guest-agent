@@ -174,9 +174,7 @@ else
       systemctl is-active google-guest-agent-manager.service >/dev/null 2>&1 || :
       # If the unit is active do a try-restart, otherwise start it.
       if [ $? -eq 0 ]; then
-        systemctl try-restart google-guest-agent-manager.service >/dev/null 2>&1 || :
-      else
-        systemctl start google-guest-agent-manager.service >/dev/null 2>&1 || :
+        systemctl restart google-guest-agent-manager.service >/dev/null 2>&1 || :
       fi
     %endif
   fi
