@@ -1,9 +1,20 @@
 #!/bin/sh -e
 
 if [ "$1" = "configure" ] ; then
-	if [ ! -f /etc/default/instance_configs.cfg ]; then 
-		cp -a "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/instance_configs.cfg" /etc/default/
-	fi
+  if [ ! -f /etc/default/instance_configs.cfg ]; then
+    cp -a "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/instance_configs.cfg" /etc/default/
+  fi
+
+  if [ -f "/etc/google-guest-agent/core-plugin-enabled" ] && [ ! -z $(grep "true" "/etc/google-guest-agent/core-plugin-enabled") ]; then
+    # If the guest agent is disabled because core plugin is enabled, then
+    # re-enable the guest agent. Otherwise it stays disabled post-upgrade.
+    systemctl enable 'google-guest-agent.service' > /dev/null || true
+    systemctl enable 'gce-workload-cert-refresh.timer' > /dev/null || true
+
+    # Clean up the file so if the user disables the service afterwards, then
+    # another upgrade won't re-enable the service erroneously.
+    rm -f /etc/google-guest-agent/core-plugin-enabled
+  fi
 fi
 
 #DEBHELPER#

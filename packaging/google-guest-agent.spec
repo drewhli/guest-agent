@@ -188,6 +188,18 @@ else
   # Package upgrade
   if [ -d /run/systemd/system ]; then
     systemctl daemon-reload >/dev/null 2>&1 || :
+
+    # Re-enable the guest agent service if core plugin was enabled, since the
+    # service would have been disabled, and stay disabled post-upgrade.
+    if [ -f "/etc/google-guest-agent/core-plugin-enabled" ] && [ ! -z $(grep "true" "/etc/google-guest-agent/core-plugin-enabled") ]; then
+        systemctl enable google-guest-agent.service > /dev/null 2>&1 || :
+        systemctl enable gce-workload-cert-refresh.timer > /dev/null 2>&1 || :
+
+        # Clean up the file so if the user disables the service afterwards, then
+        # another upgrade won't re-enable the service erroneously.
+        rm -f "/etc/google-guest-agent-core-plugin-enabled"
+    fi
+
     systemctl try-restart google-guest-agent.service >/dev/null 2>&1 || :
     %if 0%{?build_plugin_manager}
       systemctl enable google-guest-compat-manager.service >/dev/null 2>&1 || :
