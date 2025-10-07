@@ -7,7 +7,7 @@ After=network.service networking.service NetworkManager.service systemd-networkd
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/google_guest_agent_manager
+ExecStart=/usr/bin/google_guest_agent
 OOMScoreAdjust=-999
 Restart=always
 KillMode=process

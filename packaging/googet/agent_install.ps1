@@ -18,16 +18,7 @@ $display_name = 'Google Compute Engine Agent'
 $description = 'Google Compute Engine Agent'
 
 $manager_name = 'GCEAgentManager'
-$manager_path = '"C:\Program Files\Google\Compute Engine\agent\GCEWindowsAgentManager.exe"'
-$manager_display_name = 'Google Compute Engine Agent Manager'
-$manager_description = 'Google Compute Engine Agent Manager'
-
 $compat_manager = 'GCEWindowsCompatManager'
-$compat_path = '"C:\Program Files\Google\Compute Engine\agent\GCEWindowsCompatManager.exe"'
-$compat_display_name = 'Google Compute Engine Compat Manager'
-$compat_description = 'Google Compute Engine Compat Manager'
-
-$core_enabled = "C:\ProgramData\Google\Compute Engine\google-guest-agent\core-plugin-enabled"
 
 $initial_config = @'
 # GCE Instance Configuration
@@ -66,58 +57,29 @@ function Set-New-Service($service_name, $service_display_name, $service_desc, $s
 }
 
 try {
-  # This is to safeguard from installing agent manager using placeholder file
-  $install_manager = $false
-  if (Test-Path ($manager_path -replace '"', "")) {
-    $contains = Select-String -Path ($manager_path -replace '"', "") -Pattern "This is a placeholder file"
-    if ($contains -eq $null) {
-      $install_manager = $true
-    }
-  }
-
   # Guest Agent service
   Set-New-Service $name $display_name $description $path
   Set-ServiceConfig $name $path
 
-  # Guest Agent Manager and Compat Manager service
-  if ($install_manager) {
-    Set-New-Service $compat_manager $compat_display_name $compat_description $compat_path
-    Set-ServiceConfig $compat_manager $compat_path
-
-    Set-New-Service $manager_name $manager_display_name $manager_description $manager_path
-    Set-ServiceConfig $manager_name $manager_path
-  } else {
-    if (Get-Service $compat_manager -ErrorAction SilentlyContinue) {
-      Stop-Service $compat_manager
-      & sc.exe delete $compat_manager
-    }
-
-    if (Get-Service $manager_name -ErrorAction SilentlyContinue) {
-      Stop-Service $manager_name
-      & sc.exe delete $manager_name
-    }
+  # Guest Agent Manager and Compat Manager service should be uninstalled.
+  if (Get-Service $compat_manager -ErrorAction SilentlyContinue) {
+    Stop-Service $compat_manager
+    & sc.exe delete $compat_manager
+  }
+  if (Get-Service $manager_name -ErrorAction SilentlyContinue) {
+    Stop-Service $manager_name
+    & sc.exe delete $manager_name
   }
 
+  # Install the instance configs if it doesn't exist.
   $config = "${env:ProgramFiles}\Google\Compute Engine\instance_configs.cfg"
   if (-not (Test-Path $config)) {
     $initial_config | Set-Content -Path $config -Encoding ASCII
   }
 
-  if ($install_manager) {
-    # If core plugin is disabled, honor the setting and restart non-plugin based agent.
-    if (Get-Content -Path $core_enabled -ErrorAction SilentlyContinue | Select-String -Pattern "false" -Quiet) {
-      Restart-Service $name -Verbose
-    }
-    else {
-      & sc.exe config $name start=disabled
-      Stop-Service $name
-    }
-    
-    Restart-Service $compat_manager -Verbose
-    Restart-Service $manager_name -Verbose
-  } else {
-     Restart-Service $name -Verbose
-  }
+  # Restart the GCEAgent service.
+  Restart-Service $name -Verbose
+
 }
 catch {
   Write-Output $_.InvocationInfo.PositionMessage

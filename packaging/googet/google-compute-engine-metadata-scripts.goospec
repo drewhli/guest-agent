@@ -42,7 +42,7 @@
   }],
   "build": {
     "linux": "/bin/bash",
-    "linuxArgs": ["-c", "GOOS=windows /tmp/go/bin/go build -ldflags '-X main.version={{.version}}' -mod=readonly -o ./google_metadata_script_runner/GCEMetadataScripts.exe ./google_metadata_script_runner"]
+    "linuxArgs": ["-c", "./packaging/googet/windows_metadata_scripts_build.sh {{.version}}"]
   }
 }
 

@@ -8,16 +8,9 @@
   "source": "https://github.com/GoogleCloudPlatform/guest-agent/",
   "files": {
     "CorePlugin.exe": "<ProgramFiles>/Google/Compute Engine/agent/CorePlugin.exe",
-    "google_metadata_script_runner_adapt.ps1": "<ProgramFiles>/Google/Compute Engine/agent/google_metadata_script_runner_adapt.ps1",
-    "GCEMetadataScriptRunner.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEMetadataScriptRunner.exe",
-    "GCEWindowsAgentManager.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEWindowsAgentManager.exe",
-    "GCEWindowsCompatManager.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEWindowsCompatManager.exe",
-    "GCECompatMetadataScripts.exe": "<ProgramFiles>/Google/Compute Engine/metadata_scripts/GCECompatMetadataScripts.exe",
     "GCEWindowsAgent.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEWindowsAgent.exe",
     "GCEAuthorizedKeysCommand.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEAuthorizedKeysCommand.exe",
-    "GCEAuthorizedKeys.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEAuthorizedKeys.exe",
-    "GCEAuthorizedKeysNew.exe": "<ProgramFiles>/Google/Compute Engine/agent/GCEAuthorizedKeysNew.exe",
-    "ggactl_plugin.exe": "<ProgramFiles>/Google/Compute Engine/agent/ggactl_plugin.exe",
+    "ggactl.exe": "<ProgramFiles>/Google/Compute Engine/agent/ggactl.exe",
     "THIRD_PARTY_LICENSES": "<ProgramFiles>/Google/Compute Engine/THIRD_PARTY_LICENSES/",
     "LICENSE": "<ProgramFiles>/Google/Compute Engine/agent/LICENSE.txt"
   },
@@ -45,20 +38,13 @@
   "sources": [{
       "include": [
         "CorePlugin.exe",
-        "ggactl_plugin.exe",
+        "ggactl.exe",
         "GCEWindowsAgent.exe",
-        "GCECompatMetadataScripts.exe",
-        "GCEWindowsCompatManager.exe",
-        "GCEMetadataScriptRunner.exe",
-        "GCEWindowsAgentManager.exe",
         "GCEAuthorizedKeysCommand.exe",
-        "GCEAuthorizedKeys.exe",
-        "GCEAuthorizedKeysNew.exe",
         "packaging/googet/agent_install.ps1",
         "packaging/googet/agent_uninstall.ps1",
         "THIRD_PARTY_LICENSES/**",
-        "LICENSE",
-        "google_metadata_script_runner_adapt.ps1"
+        "LICENSE"
       ]
   }],
  "build": {

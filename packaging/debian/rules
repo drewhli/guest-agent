@@ -22,61 +22,49 @@ override_dh_auto_install:
 	sed -i "s/vlan_setup_enabled = false/vlan_setup_enabled = true/g" instance_configs.cfg
 	install -p -m 0644 instance_configs.cfg debian/google-guest-agent/usr/share/google-guest-agent
 	install -d debian/google-guest-agent/lib/systemd/system
-	install -p -m 0644 gce-workload-cert-refresh.timer debian/google-guest-agent/lib/systemd/system/
-	install -p -m 0755 google_metadata_script_runner_adapt debian/google-guest-agent/usr/bin/
+	install -p -m 0644 google-*-scripts.service debian/google-guest-agent/lib/systemd/system/
 	if [ -d google-guest-agent ]; then\
+		install -p -m 0644 google-guest-agent-manager.service debian/google-guest-agent/lib/systemd/system/google-guest-agent.service;\
 		install -d debian/google-guest-agent/usr/lib/google/guest_agent;\
-		install -p -m 0755 google-guest-agent/cmd/gce_metadata_script_runner/gce_metadata_script_runner debian/google-guest-agent/usr/bin/gce_metadata_script_runner;\
-		install -p -m 0755 google-guest-agent/cmd/google_guest_compat_manager/google_guest_compat_manager debian/google-guest-agent/usr/bin/google_guest_compat_manager;\
-		install -p -m 0755 google-guest-agent/cmd/google_guest_agent/google_guest_agent debian/google-guest-agent/usr/bin/google_guest_agent_manager;\
-		install -p -m 0755 google-guest-agent/cmd/ggactl/ggactl_plugin debian/google-guest-agent/usr/bin/ggactl_plugin;\
+		install -p -m 0755 google-guest-agent/cmd/gce_metadata_script_runner/gce_metadata_script_runner debian/google-guest-agent/usr/bin/google_metadata_script_runner;\
+		install -p -m 0755 google-guest-agent/cmd/google_guest_agent/google_guest_agent debian/google-guest-agent/usr/bin/google_guest_agent;\
+		install -p -m 0755 google-guest-agent/cmd/ggactl/ggactl_plugin debian/google-guest-agent/usr/bin/ggactl;\
 		install -p -m 0755 google-guest-agent/cmd/core_plugin/core_plugin debian/google-guest-agent/usr/lib/google/guest_agent/core_plugin;\
-		install -p -m 0755 google-guest-agent/cmd/metadata_script_runner_compat/gce_compat_metadata_script_runner debian/google-guest-agent/usr/bin/gce_compat_metadata_script_runner;\
+	else \
+		install -p -m 0644 google-guest-agent.service debian/google-guest-agent/lib/systemd/system/;\
+		install -p -m 0644 gce-workload-cert-refresh.service debian/google-guest-agent/lib/systemd/system/;\
+		install -p -m 0644 gce-workload-cert-refresh.timer debian/google-guest-agent/lib/systemd/system/;\
+		install -p -m 0755 google_metadata_script_runner_adapt debian/google-guest-agent/usr/bin/;\
 	fi
+
 
 override_dh_golang:
 	# We don't use any packaged dependencies, so skip dh_golang step.
 
 override_dh_auto_build:
-	dh_auto_build -O--buildsystem=golang -- -ldflags="-s -w -X main.version=$(VERSION)" -mod=readonly
 	if [ -d google-guest-agent ]; then\
-		VERSION=$(VERSION) make -C google-guest-agent cmd/google_guest_compat_manager/google_guest_compat_manager;\
 		VERSION=$(VERSION) make -C google-guest-agent cmd/google_guest_agent/google_guest_agent;\
 		VERSION=$(VERSION) make -C google-guest-agent cmd/ggactl/ggactl_plugin;\
 		VERSION=$(VERSION) make -C google-guest-agent cmd/core_plugin/core_plugin;\
 		VERSION=$(VERSION) make -C google-guest-agent cmd/gce_metadata_script_runner/gce_metadata_script_runner;\
-		VERSION=$(VERSION) make -C google-guest-agent cmd/metadata_script_runner_compat/gce_compat_metadata_script_runner;\
+	else \
+		dh_auto_build -O--buildsystem=golang -- -ldflags="-s -w -X main.version=$(VERSION)" -mod=readonly;\
 	fi
 
 override_dh_installinit:
 	# We don't ship sysvinit files or need script changes for them.
 
 override_dh_systemd_enable:
-	install -d debian/google-guest-agent/lib/systemd/system
-	install -p -m 0644 *.service debian/google-guest-agent/lib/systemd/system/
-	# Don't include guest agent manager if not building with it.
-	if [ ! -d google-guest-agent ]; then\
-		rm -f debian/google-guest-agent/lib/systemd/system/google-guest-compat-manager.service;\
-		rm -f debian/google-guest-agent/lib/systemd/system/google-guest-agent-manager.service;\
-	fi
 	install -d debian/google-guest-agent/lib/systemd/system-preset
 	install -p -m 0644 *.preset debian/google-guest-agent/lib/systemd/system-preset/
-	dh_systemd_enable google-startup-scripts.service google-shutdown-scripts.service
-	if [ -d google-guest-agent ]; then\
-		dh_systemd_enable google-guest-compat-manager.service;\
-		dh_systemd_enable google-guest-agent-manager.service;\
-	fi
-
-override_dh_installsystemd:
-	if [ -d google-guest-agent ]; then\
-		dh_installsystemd google-guest-compat-manager.service;\
-		dh_installsystemd google-guest-agent-manager.service;\
-		dh_installsystemd --no-enable --no-start google-guest-agent.service;\
-		dh_installsystemd --no-enable --no-start gce-workload-cert-refresh.timer;\
+	dh_systemd_enable google-guest-agent.service google-startup-scripts.service google-shutdown-scripts.service
+	if [ ! -d google-guest-agent ]; then\
+    dh_systemd_enable gce-workload-cert-refresh.timer;\
 	fi
 
 override_dh_systemd_start:
-	if [ -d google-guest-agent ]; then\
-		dh_systemd_start google-guest-compat-manager.service;\
-		dh_systemd_start google-guest-agent-manager.service;\
+	dh_systemd_start google-guest-agent.service
+	if [ ! -d google-guest-agent ]; then\
+		dh_systemd_start gce-workload-cert-refresh.timer;\
 	fi
+

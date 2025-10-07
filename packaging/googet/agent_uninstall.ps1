@@ -19,7 +19,7 @@ if (Get-Service GCEAgent -ErrorAction SilentlyContinue) {
 
 $compat_manager = 'GCEWindowsCompatManager'
 $name = 'GCEAgentManager'
-$cleanup_exe = "C:\Program Files\Google\Compute Engine\agent\ggactl_plugin.exe"
+$cleanup_exe = "C:\Program Files\Google\Compute Engine\agent\ggactl.exe"
 
 # Stop and Delete compat manager.
 if (Get-Service $compat_manager -ErrorAction SilentlyContinue) {
