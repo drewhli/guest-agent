@@ -462,6 +462,7 @@ func dhclientProcessExists(_ context.Context, iface string, ipVersion ipVersion)
 	}
 
 	// Check for any dhclient process that contains the iface and IP version provided.
+	var found bool
 	for _, process := range processes {
 		commandLine := process.CommandLine
 
@@ -471,14 +472,17 @@ func dhclientProcessExists(_ context.Context, iface string, ipVersion ipVersion)
 		if containsInterface {
 			// IPv4 DHClient calls don't necessarily have the '-4' flag set.
 			if ipVersion == ipv6 {
-				return containsProtocolArg, nil
+				found = found || containsProtocolArg
 			}
 			if ipVersion == ipv4 && !slices.Contains(commandLine, ipv6.Flag) {
-				return true, nil
+				found = true
+			}
+			if found {
+				break
 			}
 		}
 	}
-	return false, nil
+	return found, nil
 }
 
 // anyDhclientProcessExists returns true if there's at-least one dhclient process
