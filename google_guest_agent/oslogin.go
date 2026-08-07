@@ -141,7 +141,8 @@ func (o *osloginMgr) Disabled(ctx context.Context) (bool, error) {
 
 func setupSles16OSLoginDirs() error {
 	isSles16 := strings.Contains(osInfo.OS, "sles") || strings.Contains(osInfo.OS, "opensuse")
-	if !isSles16 || osInfo.Version.Major != 16 {
+	isSLMicro := strings.Contains(osInfo.OS, "sl-micro")
+	if !((isSles16 && osInfo.Version.Major == 16) || isSLMicro) {
 		logger.Infof("Skipping OSLogin SLES 16 specific setup on %q %d", osInfo.OS, osInfo.Version.Major)
 		return nil
 	}
